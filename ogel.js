@@ -1,94 +1,52 @@
-var jsdom = require('jsdom'),
-    jef = require('jef'),
-    Ooze = require('ooze'),
-    WeakMap = require('weakmap');
+var arrayProto = [],
+    Control = require('./control'),
+    TextControl = require('./textControl'),
+    ogel = {};
 
-function Control(model, element, boundAttributes){
-    var control = this;
+function bindElement(element, model, boundAttributes){
+    var ogel = this;
+    if(element.tagName in ogel.controls){
+        new ogel.controls[element.tagName](model, element, boundAttributes);
+    }else{
+        new Control(model, element, boundAttributes);
+    }
+}
 
-    this._boundAttributes = boundAttributes;
-
-    this._render = function(){
-        this.element = element;
-    };
-
-    jef.Control.apply(this, arguments);
-
-    boundAttributes.forEach(function(boundAttribute){
-        jef.addProperty(control, boundAttribute.name);
-
-        var handler;
-
-        if(boundAttribute.name === 'text'){
-            handler = function(value){
-                control.element.textContent = value == null ? '' : value;
-            };
-        }else{
-            handler = function(value){
-                if(value == null){
-                    control.element.removeAttribute(boundAttribute.name);
-                }else{
-                    control.element.setAttribute(boundAttribute.name, value);
-                }
-            };
+function init(elements, model){
+    var ogel = this;
+    arrayProto.forEach.call(elements, function(element){
+        if(element.tagName === 'OGEL-TEXT'){
+            new TextControl(model, element, element.getAttribute('content'));
+            return;
         }
 
-        control[boundAttribute.name].onChange(control.model, handler);
-    });
-    this._bind();
-}
-Control.prototype = Object.create(jef.Control.prototype);
-Control.prototype.constructor = Control;
-Control.prototype._bind = function(){
-    var control = this;
+        var boundAttributes = [];
 
-    this._boundAttributes.forEach(function(boundAttribute){
-        control[boundAttribute.name].bindTo(boundAttribute.path);
+        for(var i = 0; i < element.attributes.length; i++){
+            var attribute = element.attributes[i];
+            if (!attribute.specified) {
+                continue;
+            }
+
+            if(attribute.name.indexOf('ogel') === 0){
+                var boundAttribute = {
+                    name: attribute.name.slice(5),
+                    path: attribute.value
+                };
+                boundAttributes.push(boundAttribute);
+            }
+        }
+
+        if(boundAttributes.length){
+            ogel.bindElement(element, model, boundAttributes);
+        }
     });
 };
 
-function Renderer(template){
-    var renderer = this;
-    this.model = new Ooze();
-
-    var pageElements = [];
-
-    function bindElement(element, boundAttributes){
-        var control = new Control(renderer.model, element, boundAttributes);
-        pageElements.push(control);
-    }
-
-    function parseTemplate(template){
-        jsdom.env(
-            template,
-            function (errors, window) {
-                var elements = window.document.querySelectorAll('*');
-                [].forEach.call(elements, function(element){
-                    var boundAttributes = [];
-                    Object.keys(element.attributes).filter(function(key){
-                        if(key.indexOf('ogel') === 0){
-                            var boundAttribute = {
-                                name: key.slice(5),
-                                path: element.getAttribute(key)
-                            };
-                            boundAttributes.push(boundAttribute);
-                        }
-                    })
-                    if(boundAttributes.length){
-                        bindElement(element, boundAttributes);
-                    }
-                });
-
-
-            }
-        );
-    }
-
-    parseTemplate(template.toString());
-
-    setTimeout(function(){
-        renderer.model.set('deals', 'abc')
-    },1000);
+function Ogel(){
+    this.controls = {};
 }
+Ogel.prototype.init = init;
+Ogel.prototype.bindElement = bindElement;
 
-module.exports = Renderer;
+module.exports = Ogel;
