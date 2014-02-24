@@ -1,7 +1,7 @@
 {
   "name": "ogel",
   "version": "0.0.0",
-  "description": "",
+  "description": "A client/server micro UI databinding library.",
   "main": "ogel.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
