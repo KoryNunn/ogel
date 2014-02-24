@@ -11,5 +11,8 @@
   "dependencies": {
     "jef": "0.0.x",
     "ooze": "0.0.x"
+  },
+  "peerDependencies": {
+    "jsdom": "~0.10.1"
   }
 }
