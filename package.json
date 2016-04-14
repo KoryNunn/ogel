@@ -14,5 +14,14 @@
   },
   "peerDependencies": {
     "jsdom": "~0.10.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KoryNunn/ogel.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/KoryNunn/ogel/issues"
+  },
+  "homepage": "https://github.com/KoryNunn/ogel#readme"
 }
